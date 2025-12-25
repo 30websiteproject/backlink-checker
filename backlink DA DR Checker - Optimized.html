@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Backlink Manager - Optimized</title>
+  <style>
+    :root {
+      font-family: Arial, sans-serif;
+      --primary: #4f46e5;
+      --secondary: #6b7280;
+      --danger: #ef4444;
+      --dark: #1f2937;
+      --light: #f9fafb;
+      --border: #e5e7eb;
+      --card-bg: #ffffff;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: var(--dark);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    .sidebar {
+      width: 200px;
+      background: #1f2937;
+      color: white;
+      padding: 18px;
+    }
+    
+    .sidebar h2 {
+      font-size: 18px;
+      margin: 0 0 16px;
+      text-align: center;
+    }
+    
+    .sb-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: 0;
+      border-radius: 6px;
+      background: #374151;
+      color: white;
+      margin-bottom: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .sb-btn:hover {
+      background: #4b5563;
+    }
+    
+    .sb-btn.active {
+      background: var(--primary);
+    }
+    
+    .main {
+      flex: 1;
+      padding: 18px;
+    }
+    
+    h1 {
+      font-size: 20px;
+      margin: 0 0 16px;
+      text-align: center;
+      color: var(--dark);
+    }
+    
+    .grid-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .col {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 6px;
+    }
+    
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .sort-controls {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .sort-btn {
+      padding: 2px 5px;
+      font-size: 10px;
+      border: 1px solid var(--border);
+      background: var(--light);
+      color: var(--secondary);
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    
+    .sort-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .sort-indicator {
+      margin-left: 3px;
+      font-size: 11px;
+    }
+    
+    textarea, input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-family: monospace;
+      font-size: 13px;
+    }
+    
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    textarea {
+      resize: vertical;
+      height: 100px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    button {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 0;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    button:hover {
+      background: #3730a3;
+    }
+    
+    button.secondary {
+      background: var(--secondary);
+    }
+    
+    button.secondary:hover {
+      background: #4b5563;
+    }
+    
+    button.danger {
+      background: var(--danger);
+    }
+    
+    button.danger:hover {
+      background: #dc2626;
+    }
+    
+    .note {
+      font-size: 13px;
+      color: var(--secondary);
+      margin-top: 8px;
+      text-align: center;
+      padding: 12px;
+      background: var(--card-bg);
+      border-radius: 6px;
+      border: 1px dashed var(--border);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      background: var(--card-bg);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 13px;
+    }
+    
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    #searchInput {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    
+    #searchInput:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <h2>Menu</h2>
+    <button class="sb-btn active" id="btnMenuUpdate">Update Backlinks</button>
+    <button class="sb-btn" id="btnMenuFetch">Get Domain Info</button>
+  </div>
+
+  <div class="main">
+    <div id="section-update">
+      <h1>Backlink Manager</h1>
+      <div class="grid-row">
+        <div class="col"><label>DR</label><textarea id="dr"></textarea></div>
+        <div class="col"><label>Spam Score</label><textarea id="spam"></textarea></div>
+        <div class="col"><label>Traffic</label><textarea id="traffic"></textarea></div>
+        <div class="col"><label>Backlink URL</label><textarea id="backlink"></textarea></div>
+        <div class="col"><label>Category</label><textarea id="category"></textarea></div>
+        <div class="col"><label>Type</label><textarea id="type"></textarea></div>
+      </div>
+      <div class="controls">
+        <button id="btnUpdate">Update & Save</button>
+        <input type="file" id="fileImport" accept=".csv" style="display:none">
+        <button class="secondary" id="btnLoad">Load</button>
+        <button class="secondary" id="btnExport">Export CSV</button>
+        <button class="secondary" id="btnImport">Upload CSV</button>
+        <button class="danger" id="btnClear">Clear Storage</button>
+      </div>
+      <input type="text" id="searchInput" placeholder="Search backlinks..." style="margin-top:10px;">
+      <div id="tableWrap"></div>
+    </div>
+
+    <div id="section-fetch" class="hidden">
+      <h1>Get Domain Info</h1>
+      <textarea id="fetchDomains" style="height:200px" placeholder="Enter domains or URLs, one per line"></textarea>
+      <div class="controls">
+        <button id="btnFetchInfo">Fetch Info</button>
+        <button class="secondary" id="btnExportFetch">Export Result</button>
+        <button class="secondary" id="btnClearFetch">Clear</button>
+      </div>
+      <div id="fetchTableWrap"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// helpers
+function splitLines(txt){return txt?txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean):[];}
+function normalizeUrl(url){try{const u=new URL(url);return u.hostname.replace(/^www\./,'').toLowerCase();}catch{return url.toLowerCase();}}
+function countFilled(r){return ['backlink','dr','spam','traffic','category','type'].filter(f=>r[f]).length;}
+
+// section switch
+function showSection(name){
+  document.getElementById('section-update').classList.toggle('hidden',name!=='update');
+  document.getElementById('section-fetch').classList.toggle('hidden',name!=='fetch');
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(name==='update'?'btnMenuUpdate':'btnMenuFetch').classList.add('active');
+}
+
+// storage
+function load(){return JSON.parse(localStorage.getItem('backlinksData')||'[]');}
+function save(rows){localStorage.setItem('backlinksData',JSON.stringify(rows));}
+
+function dedupe(rows){
+  const map=new Map();
+  rows.forEach(r=>{
+    const k=normalizeUrl(r.backlink);
+    if(!map.has(k) || countFilled(r)>countFilled(map.get(k))) map.set(k,r);
+  });
+  return [...map.values()];
+}
+
+// build & render
+function build(){
+  const cols=['dr','spam','traffic','backlink','category','type'].map(id=>splitLines(document.getElementById(id).value));
+  const max=Math.max(...cols.map(c=>c.length));
+  const rows=[];
+  for(let i=0;i<max;i++) rows.push({dr:cols[0][i]||'',spam:cols[1][i]||'',traffic:cols[2][i]||'',backlink:cols[3][i]||'',category:cols[4][i]||'',type:cols[5][i]||''});
+  return rows;
+}
+
+function render(rows){
+  const wrap=document.getElementById('tableWrap');
+  if(!rows.length){wrap.innerHTML='<p class="note">No data</p>';return;}
+  let h='<table><tr><th>#</th><th onclick="toggleSort(\'backlink\')" style="cursor:pointer">Backlink <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'dr\')" style="cursor:pointer">DR <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'spam\')" style="cursor:pointer">Spam <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'traffic\')" style="cursor:pointer">Traffic <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'category\')" style="cursor:pointer">Category <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'type\')" style="cursor:pointer">Type <span class="sort-indicator">↕️</span></th></tr>';
+  rows.forEach((r,i)=>h+=`<tr><td>${i+1}</td><td>${r.backlink}</td><td>${r.dr}</td><td>${r.spam}</td><td>${r.traffic}</td><td>${r.category}</td><td>${r.type}</td></tr>`);
+  wrap.innerHTML=h+'</table>';
+}
+
+function sortColumn(field, order) {
+  const rows = load();
+  
+  rows.sort((a, b) => {
+    let valA = a[field] || '';
+    let valB = b[field] || '';
+    
+    // Try to convert to number for numeric sorting if both values look like numbers
+    const numA = parseFloat(valA);
+    const numB = parseFloat(valB);
+    
+    if (!isNaN(numA) && !isNaN(numB)) {
+      valA = numA;
+      valB = numB;
+    } else {
+      // Convert to string for text comparison
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+    }
+    
+    if (order === 'asc') {
+      return valA > valB ? 1 : valA < valB ? -1 : 0;
+    } else {
+      return valA < valB ? 1 : valA > valB ? -1 : 0;
+    }
+  });
+  
+  render(rows);
+}
+
+// Enhanced version to handle click toggling
+function toggleSort(field) {
+  // Get the current sort indicator for this field
+  const headers = document.querySelectorAll('th');
+  let currentOrder = 'asc';
+  
+  // Check if this field is currently sorted
+  for (let header of headers) {
+    if (header.innerHTML.includes(field) && header.querySelector('.sort-indicator')) {
+      const indicator = header.querySelector('.sort-indicator');
+      // Toggle between ascending and descending
+      if (indicator.textContent === '↑') {
+        currentOrder = 'desc';
+        indicator.textContent = '↓';
+      } else {
+        currentOrder = 'asc';
+        indicator.textContent = '↑';
+      }
+      break;
+    }
+  }
+  
+  // Sort the data
+  const rows = load();
+  
+  rows.sort((a, b) => {
+    let valA = a[field] || '';
+    let valB = b[field] || '';
+    
+    // Try to convert to number for numeric sorting if both values look like numbers
+    const numA = parseFloat(valA);
+    const numB = parseFloat(valB);
+    
+    if (!isNaN(numA) && !isNaN(numB)) {
+      valA = numA;
+      valB = numB;
+    } else {
+      // Convert to string for text comparison
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+    }
+    
+    if (currentOrder === 'asc') {
+      return valA > valB ? 1 : valA < valB ? -1 : 0;
+    } else {
+      return valA < valB ? 1 : valA > valB ? -1 : 0;
+    }
+  });
+  
+  render(rows);
+}
+
+// fetch domain info
+function fetchDomainInfo(searchedUrls){
+  const data = load();
+  const results = [];
+  searchedUrls.forEach(item => {
+    data.forEach(r => {
+      if (normalizeUrl(r.backlink) === item.domain) {
+        results.push({ ...r, backlink: item.full });
+      }
+    });
+  });
+  return results;
+}
+
+function renderFetch(rows){
+  const w=document.getElementById('fetchTableWrap');
+  if(!rows.length){w.innerHTML='<p class="note">No matches</p>';return;}
+  let h='<table><tr><th>Searched URL</th><th>DR</th><th>Spam</th><th>Traffic</th><th>Category</th><th>Type</th></tr>';
+  rows.forEach(r=>h+=`<tr><td>${r.backlink}</td><td>${r.dr}</td><td>${r.spam}</td><td>${r.traffic}</td><td>${r.category}</td><td>${r.type}</td></tr>`);
+  w.innerHTML=h+'</table>';
+}
+
+// import CSV (URL,DR,Spam Score,Traffic,Category,Type)
+function importCSV(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2) return;
+
+    const header = lines[0].toLowerCase();
+    const hasDR = header.includes('dr');
+
+    const newRows = lines.slice(1).map(l=>{
+      const parts = l.split(',').map(v=>v.replace(/^"|"$/g,''));
+
+      // Expected order:
+      // URL, DR, Spam Score, Traffic, Category, Type
+      return hasDR ? {
+        backlink: parts[0] || '',
+        dr: parts[1] || '',
+        spam: parts[2] || '',
+        traffic: parts[3] || '',
+        category: parts[4] || '',
+        type: parts[5] || ''
+      } : {
+        // fallback old format: URL, Spam Score, Traffic, Category, Type
+        backlink: parts[0] || '',
+        dr: '',
+        spam: parts[1] || '',
+        traffic: parts[2] || '',
+        category: parts[3] || '',
+        type: parts[4] || ''
+      };
+    });
+
+    // Update existing records with new data instead of replacing
+    const existingRows = load();
+    
+    // Process new rows
+    newRows.forEach(newRow => {
+      if (!newRow.backlink) return; // Skip empty rows
+      
+      const normalizedNewUrl = normalizeUrl(newRow.backlink);
+      const existingIndex = existingRows.findIndex(r => normalizeUrl(r.backlink) === normalizedNewUrl);
+      
+      if (existingIndex !== -1) {
+        // Merge new data with existing record, keeping existing data unless new data has a value
+        const existingRow = existingRows[existingIndex];
+        const mergedRow = { ...existingRow };
+        
+        // Only update fields that are empty in the existing record or have new values in the new record
+        if (newRow.dr) mergedRow.dr = newRow.dr;
+        if (newRow.spam) mergedRow.spam = newRow.spam;
+        if (newRow.traffic) mergedRow.traffic = newRow.traffic;
+        if (newRow.category) mergedRow.category = newRow.category;
+        if (newRow.type) mergedRow.type = newRow.type;
+        
+        // Update URL only if the new URL is longer than the existing one
+        // If new URL is longer, update it; otherwise keep the existing longer URL
+        if (newRow.backlink && newRow.backlink.length > existingRow.backlink.length) {
+          mergedRow.backlink = newRow.backlink;
+        }
+        
+        // Update the existing row in the array
+        existingRows[existingIndex] = mergedRow;
+      } else {
+        // New backlink that doesn't exist, add it
+        existingRows.push(newRow);
+      }
+    });
+    
+    // Save the updated array
+    save(existingRows);
+    render(existingRows);
+  };
+  reader.readAsText(file);
+}
+
+// events
+document.getElementById('btnMenuUpdate').onclick=()=>showSection('update');
+document.getElementById('btnMenuFetch').onclick=()=>showSection('fetch');
+
+document.getElementById('btnUpdate').onclick=()=>{
+  const newRows = build();
+  const existingRows = load();
+  
+  // Process new rows
+  newRows.forEach(newRow => {
+    if (!newRow.backlink) return; // Skip empty rows
+    
+    const normalizedNewUrl = normalizeUrl(newRow.backlink);
+    const existingIndex = existingRows.findIndex(r => normalizeUrl(r.backlink) === normalizedNewUrl);
+    
+    if (existingIndex !== -1) {
+      // Merge new data with existing record, keeping existing data unless new data has a value
+      const existingRow = existingRows[existingIndex];
+      const mergedRow = { ...existingRow };
+      
+      // Only update fields that are empty in the existing record or have new values in the new record
+      if (newRow.dr) mergedRow.dr = newRow.dr;
+      if (newRow.spam) mergedRow.spam = newRow.spam;
+      if (newRow.traffic) mergedRow.traffic = newRow.traffic;
+      if (newRow.category) mergedRow.category = newRow.category;
+      if (newRow.type) mergedRow.type = newRow.type;
+      
+      // Update URL only if the new URL is longer than the existing one
+      // If new URL is longer, update it; otherwise keep the existing longer URL
+      if (newRow.backlink && newRow.backlink.length > existingRow.backlink.length) {
+        mergedRow.backlink = newRow.backlink;
+      }
+      
+      // Update the existing row in the array
+      existingRows[existingIndex] = mergedRow;
+    } else {
+      // New backlink that doesn't exist, add it
+      existingRows.push(newRow);
+    }
+  });
+  
+  // Save the updated array
+  save(existingRows);
+  render(existingRows);
+};
+document.getElementById('btnLoad').onclick=()=>render(load());
+
+document.getElementById('btnImport').onclick=()=>fileImport.click();
+fileImport.onchange=e=>{if(e.target.files[0])importCSV(e.target.files[0]);};
+
+document.getElementById('btnExport').onclick=()=>{
+  const data = load();
+  if(!data.length){ alert('No data to export'); return; }
+  let csv = ['URL,DR,Spam Score,Traffic,Category,Type'];
+  data.forEach(r=>{
+    const row = [r.backlink||'',r.dr||'',r.spam||'',r.traffic||'',r.category||'',r.type||'']
+      .map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+    csv.push(row);
+  });
+  const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'backlinks_export.csv';
+  a.click();
+};
+
+document.getElementById('btnClear').onclick=()=>{if(confirm('Clear all data?')){localStorage.clear();render([]);}};
+document.getElementById('searchInput').oninput=e=>{
+  const t=e.target.value.toLowerCase();
+  render(load().filter(r=>JSON.stringify(r).toLowerCase().includes(t)));
+};
+
+document.getElementById('btnFetchInfo').onclick=()=>{
+  const searchedUrls = splitLines(fetchDomains.value).map(u => ({full:u,domain:normalizeUrl(u)}));
+  renderFetch(fetchDomainInfo(searchedUrls));
+};
+
+document.getElementById('btnClearFetch').onclick=()=>{fetchDomains.value='';fetchTableWrap.innerHTML='';};
+
+document.getElementById('btnExportFetch').onclick=()=>{
+  const rows=[...fetchTableWrap.querySelectorAll('tr')].map(r=>[...r.children].map(c=>`"${c.innerText}"`).join(','));
+  if(rows.length<2){alert('No data');return;}
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='domain_info.csv';a.click();
+};
+
+render(load());
+</script>
+</body>
+</html>
