@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Beautiful Backlink Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <h2>Backlink Manager</h2>
+    <button class="sb-btn active" id="btnMenuUpdate">Update Backlinks</button>
+    <button class="sb-btn" id="btnMenuFetch">Get Domain Info</button>
+  </div>
+
+  <div class="main">
+    <div id="section-update">
+      <h1>Beautiful Backlink Manager</h1>
+      
+      <!-- Metrics Summary Section -->
+      <div class="grid-row">
+        <div class="col">
+          <label>Total Backlinks</label>
+          <div id="totalBacklinks" class="metric-value">0</div>
+        </div>
+        <div class="col">
+          <label onclick="downloadMissing('spam')" style="cursor: pointer;">
+            Spam Score Missing
+            <div class="sort-controls" style="display: inline-block; margin-left: 5px;">↕️</div>
+          </label>
+          <div id="spamMissing" class="metric-value spam-missing" onclick="downloadMissing('spam')">0</div>
+        </div>
+        <div class="col">
+          <label onclick="downloadMissing('dr')" style="cursor: pointer;">
+            DR Missing
+            <div class="sort-controls" style="display: inline-block; margin-left: 5px;">↕️</div>
+          </label>
+          <div id="drMissing" class="metric-value dr-missing" onclick="downloadMissing('dr')">0</div>
+        </div>
+        <div class="col">
+          <label onclick="downloadMissing('traffic')" style="cursor: pointer;">
+            Traffic Missing
+            <div class="sort-controls" style="display: inline-block; margin-left: 5px;">↕️</div>
+          </label>
+          <div id="trafficMissing" class="metric-value traffic-missing" onclick="downloadMissing('traffic')">0</div>
+        </div>
+        <div class="col">
+          <label>All Complete</label>
+          <div id="allComplete" class="metric-value all-complete">0</div>
+        </div>
+        <div class="col">
+          <label>Progress</label>
+          <div class="progress-container">
+            <div id="progressFill" class="progress-fill"></div>
+            <span id="progressText" class="progress-text">0%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid-row">
+        <div class="col"><label>DR</label><textarea id="dr"></textarea></div>
+        <div class="col"><label>Spam Score</label><textarea id="spam"></textarea></div>
+        <div class="col"><label>Traffic</label><textarea id="traffic"></textarea></div>
+        <div class="col"><label>Backlink URL</label><textarea id="backlink"></textarea></div>
+        <div class="col"><label>Category</label><textarea id="category"></textarea></div>
+        <div class="col"><label>Type</label><textarea id="type"></textarea></div>
+      </div>
+      <div class="controls">
+        <button id="btnUpdate">Update & Save</button>
+        <input type="file" id="fileImport" accept=".csv" style="display:none">
+        <button class="secondary" id="btnLoad">Load</button>
+        <button class="secondary" id="btnExport">Export CSV</button>
+        <button class="secondary" id="btnImport">Upload CSV</button>
+        <button class="danger" id="btnClear">Clear Storage</button>
+      </div>
+      <input type="text" id="searchInput" placeholder="Search backlinks..." style="margin-top:10px;">
+      <div id="tableWrap"></div>
+    </div>
+
+    <div id="section-fetch" class="hidden">
+      <h1>Get Domain Info</h1>
+      <textarea id="fetchDomains" style="height:200px" placeholder="Enter domains or URLs, one per line"></textarea>
+      <div class="controls">
+        <button id="btnFetchInfo">Fetch Info</button>
+        <button class="secondary" id="btnExportFetch">Export Result</button>
+        <button class="secondary" id="btnClearFetch">Clear</button>
+      </div>
+      <div id="fetchTableWrap"></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
