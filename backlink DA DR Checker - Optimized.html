@@ -290,9 +290,14 @@
 
 <script>
 // helpers
+const sortState={field:null,order:'asc'};
 function splitLines(txt){return txt?txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean):[];}
 function normalizeUrl(url){try{const u=new URL(url);return u.hostname.replace(/^www\./,'').toLowerCase();}catch{return url.toLowerCase();}}
 function countFilled(r){return ['backlink','dr','spam','traffic','category','type'].filter(f=>r[f]).length;}
+function getIndicator(field){
+  if(sortState.field!==field) return '↕️';
+  return sortState.order==='asc'?'↑':'↓';
+}
 
 // section switch
 function showSection(name){
@@ -324,94 +329,38 @@ function build(){
   return rows;
 }
 
+function sortRows(rows, field, order){
+  return [...rows].sort((a,b)=>{
+    let valA=a[field]||'';
+    let valB=b[field]||'';
+    const numA=parseFloat(valA);
+    const numB=parseFloat(valB);
+    if(!isNaN(numA)&&!isNaN(numB)){valA=numA;valB=numB;}else{valA=String(valA).toLowerCase();valB=String(valB).toLowerCase();}
+    if(order==='asc') return valA>valB?1:valA<valB?-1:0;
+    return valA<valB?1:valA>valB?-1:0;
+  });
+}
+
 function render(rows){
   const wrap=document.getElementById('tableWrap');
   if(!rows.length){wrap.innerHTML='<p class="note">No data</p>';return;}
-  let h='<table><tr><th>#</th><th onclick="toggleSort(\'backlink\')" style="cursor:pointer">Backlink <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'dr\')" style="cursor:pointer">DR <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'spam\')" style="cursor:pointer">Spam <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'traffic\')" style="cursor:pointer">Traffic <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'category\')" style="cursor:pointer">Category <span class="sort-indicator">↕️</span></th><th onclick="toggleSort(\'type\')" style="cursor:pointer">Type <span class="sort-indicator">↕️</span></th></tr>';
-  rows.forEach((r,i)=>h+=`<tr><td>${i+1}</td><td>${r.backlink}</td><td>${r.dr}</td><td>${r.spam}</td><td>${r.traffic}</td><td>${r.category}</td><td>${r.type}</td></tr>`);
+  const sortedRows=sortState.field?sortRows(rows,sortState.field,sortState.order):rows;
+  let h='<table><tr><th>#</th>'+
+    `<th data-field="backlink" onclick="toggleSort('backlink')" style="cursor:pointer">Backlink <span class="sort-indicator">${getIndicator('backlink')}</span></th>`+
+    `<th data-field="dr" onclick="toggleSort('dr')" style="cursor:pointer">DR <span class="sort-indicator">${getIndicator('dr')}</span></th>`+
+    `<th data-field="spam" onclick="toggleSort('spam')" style="cursor:pointer">Spam <span class="sort-indicator">${getIndicator('spam')}</span></th>`+
+    `<th data-field="traffic" onclick="toggleSort('traffic')" style="cursor:pointer">Traffic <span class="sort-indicator">${getIndicator('traffic')}</span></th>`+
+    `<th data-field="category" onclick="toggleSort('category')" style="cursor:pointer">Category <span class="sort-indicator">${getIndicator('category')}</span></th>`+
+    `<th data-field="type" onclick="toggleSort('type')" style="cursor:pointer">Type <span class="sort-indicator">${getIndicator('type')}</span></th></tr>`;
+  sortedRows.forEach((r,i)=>h+=`<tr><td>${i+1}</td><td>${r.backlink}</td><td>${r.dr}</td><td>${r.spam}</td><td>${r.traffic}</td><td>${r.category}</td><td>${r.type}</td></tr>`);
   wrap.innerHTML=h+'</table>';
 }
 
-function sortColumn(field, order) {
-  const rows = load();
-  
-  rows.sort((a, b) => {
-    let valA = a[field] || '';
-    let valB = b[field] || '';
-    
-    // Try to convert to number for numeric sorting if both values look like numbers
-    const numA = parseFloat(valA);
-    const numB = parseFloat(valB);
-    
-    if (!isNaN(numA) && !isNaN(numB)) {
-      valA = numA;
-      valB = numB;
-    } else {
-      // Convert to string for text comparison
-      valA = String(valA).toLowerCase();
-      valB = String(valB).toLowerCase();
-    }
-    
-    if (order === 'asc') {
-      return valA > valB ? 1 : valA < valB ? -1 : 0;
-    } else {
-      return valA < valB ? 1 : valA > valB ? -1 : 0;
-    }
-  });
-  
-  render(rows);
-}
-
 // Enhanced version to handle click toggling
-function toggleSort(field) {
-  // Get the current sort indicator for this field
-  const headers = document.querySelectorAll('th');
-  let currentOrder = 'asc';
-  
-  // Check if this field is currently sorted
-  for (let header of headers) {
-    if (header.innerHTML.includes(field) && header.querySelector('.sort-indicator')) {
-      const indicator = header.querySelector('.sort-indicator');
-      // Toggle between ascending and descending
-      if (indicator.textContent === '↑') {
-        currentOrder = 'desc';
-        indicator.textContent = '↓';
-      } else {
-        currentOrder = 'asc';
-        indicator.textContent = '↑';
-      }
-      break;
-    }
-  }
-  
-  // Sort the data
-  const rows = load();
-  
-  rows.sort((a, b) => {
-    let valA = a[field] || '';
-    let valB = b[field] || '';
-    
-    // Try to convert to number for numeric sorting if both values look like numbers
-    const numA = parseFloat(valA);
-    const numB = parseFloat(valB);
-    
-    if (!isNaN(numA) && !isNaN(numB)) {
-      valA = numA;
-      valB = numB;
-    } else {
-      // Convert to string for text comparison
-      valA = String(valA).toLowerCase();
-      valB = String(valB).toLowerCase();
-    }
-    
-    if (currentOrder === 'asc') {
-      return valA > valB ? 1 : valA < valB ? -1 : 0;
-    } else {
-      return valA < valB ? 1 : valA > valB ? -1 : 0;
-    }
-  });
-  
-  render(rows);
+function toggleSort(field){
+  sortState.order=sortState.field===field&&sortState.order==='asc'?'desc':'asc';
+  sortState.field=field;
+  render(load());
 }
 
 // fetch domain info
